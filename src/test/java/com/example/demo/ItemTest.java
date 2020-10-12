@@ -18,6 +18,7 @@ import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +44,41 @@ public class ItemTest {
         // 配置映射，会根据Item类中的id、Field等字段来自动完成映射
         elasticsearchTemplate.putMapping(Item.class);
     }
+
+
+    @Test
+    public void indexList() {
+        List<Item> list = new ArrayList<>();
+
+
+        list.add(new Item(51L, "蓝牙耳机", " 耳机", "小米", 399.00, "http://image.leyou.com/123.jpg"));
+        list.add(new Item(53L, "蓝牙耳机", " 耳机", "深海", 4799.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(54L, "蓝牙耳机", " 耳机", "三星", 4799.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(55L, "蓝牙耳机", " 耳机", "苹果", 4799.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(56L, "蓝牙耳机", " 耳机", "Beatles", 1799.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(57L, "蓝牙耳机", " 耳机", "森海塞尔", 499.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(58L, "蓝牙耳机", " 耳机", "索尼", 499.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(59L, "蓝牙耳机", " 耳机", "铁三角", 47599.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(60L, "蓝牙耳机", " 耳机", "AKG", 479449.00, "http://image.leyou.com/3.jpg"));
+
+
+        list.add(new Item(60L, "半入耳式耳机", " 耳机", "Beatles", 1299.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(61L, "半入耳式耳机", " 耳机", "森海塞尔", 299.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(62L, "半入耳式耳机", " 耳机", "索尼", 422.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(63L, "半入耳式耳机", " 耳机", "铁三角", 599.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(64L, "半入耳式耳机", " 耳机", "AKG", 445.00, "http://image.leyou.com/3.jpg"));
+
+        list.add(new Item(50L, "不入耳耳机", " 耳机", "小米", 3699.00, "http://image.leyou.com/123.jpg"));
+        list.add(new Item(65L, "不入耳耳机", " 耳机", "Beatles", 1299.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(66L, "不入耳耳机", " 耳机", "森海塞尔", 299.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(67L, "不入耳耳机", " 耳机", "索尼", 422.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(68L, "不入耳耳机", " 耳机", "铁三角", 599.00, "http://image.leyou.com/3.jpg"));
+        list.add(new Item(69L, "不入耳耳机", " 耳机", "AKG", 445.00, "http://image.leyou.com/3.jpg"));
+
+        // 接收对象集合，实现批量新增
+        itemRepository.saveAll(list);
+    }
+
 
 
     @Test
@@ -75,12 +111,28 @@ public class ItemTest {
     }
 
 
+    /**
+     * 对应DSL
+     * GET /item/_search
+     * {
+     *   "size": 0,
+     *   "aggs": {
+     *     "group_by_brand": {
+     *       "terms": {
+     *         "field": "brand",
+     *         "size": 10
+     *       }
+     *     }
+     *   }
+     * }
+     */
     @Test
     public void testAgg(){
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         // 不查询任何结果
         queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{""}, null));
         // 1、添加一个新的聚合，聚合类型为terms，聚合名称为brands，聚合字段为brand
+
         queryBuilder.addAggregation(
                 AggregationBuilders.terms("brands").field("brand"));
         // 2、查询,需要把结果强转为AggregatedPage类型
@@ -102,7 +154,30 @@ public class ItemTest {
     }
 
 
-
+    /**
+     * DSL
+     *  GET /item/_search
+     * {
+     *   "size": 0,
+     *   "aggs": {
+     *     "group_by_brand": {
+     *       "terms": {
+     *         "field": "brand",
+     *         "size": 10
+     *       },
+     *       "aggs": {
+     *         "avg_price": {
+     *           "avg": {
+     *             "field": "price"
+     *           }
+     *         }
+     *       }
+     *     }
+     *
+     *   }
+     * }
+     *
+     */
     @Test
     public void testSubAgg(){
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();

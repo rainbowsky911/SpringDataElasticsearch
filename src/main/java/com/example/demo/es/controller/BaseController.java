@@ -75,8 +75,8 @@ public class BaseController {
      */
     @PostMapping("/import_data")
     public Object importData() {
-        Item item = new Item(1L, "小米手机", " 手机",
-                "小米", 3499.00, "http://image.leyou.com/13123.jpg");
+        Item item = new Item(1L, "VIVO手机", " 手机",
+                "VIVO", 3499.00, "http://image.leyou.com/13123.jpg");
         Item save = itemRepository.save(item);
         return save;
     }
